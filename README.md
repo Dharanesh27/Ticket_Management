@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎫 SupportDesk — Customer Support Ticket Management System
 
 A full-stack web application designed to help organizations manage customer support requests efficiently. SupportDesk provides a centralized platform for creating tickets, tracking their progress, assigning support agents, and managing issue resolution.
@@ -462,3 +463,124 @@ This project provides practical experience with:
 B.Tech — Artificial Intelligence and Data Science
 
 Project: Customer Support Ticket Management System
+=======
+# SupportDesk - Customer Support Ticket Management System
+
+SupportDesk is an enterprise-grade Customer Support Ticket Management System built from scratch as a modular monolith. It provides customer self-service ticket filing, agent queue management, and executive administrative oversight with strict role-based access control (RBAC), database transaction atomicity, and an immutable audit history log.
+
+---
+
+## 1. Key Features
+
+- **Public Self-Service Registration & Secure Auth:** Customers can sign up and receive immediate JWT tokens. Registration strictly provisions `ROLE_CUSTOMER` to prevent privilege escalation.
+- **Automated Administrator Bootstrap:** The backend seeds a secure system administrator upon initial startup if no admin exists in the database.
+- **Full Ticket Lifecycle Workflow:**
+  - `OPEN` &rarr; `IN_PROGRESS` (Agent claim or Admin assignment)
+  - `IN_PROGRESS` &rarr; `RESOLVED` (Handled by assigned agent or administrator)
+  - `RESOLVED` &rarr; `CLOSED` (Terminal state)
+  - Reopening is restricted to administrators.
+- **Collaborative Conversations & Internal Notes:** Real-time discussion between customers and support engineers. Staff can mark comments as `internalNote`, automatically stripping them from customer views.
+- **Comprehensive Audit Trail:** Immutable ticket history tracking previous and new values, actor details, and timestamps within the same database transaction.
+- **Three Distinct Role-Based Dashboards:**
+  - **Customer Portal:** Track active requests, status badges, and submit new tickets.
+  - **Agent Workstation:** View personal workload, monitor unassigned tickets, and claim tickets in one click.
+  - **Executive Admin Dashboard:** Real-time data visualizations with Recharts (status pie charts, priority distribution bars), agent capacity breakdown, and user administration.
+- **Safe Server-Side Search, Filter, & Pagination:** Filter by status, priority, category, or agent with allowlisted sorting keys.
+
+---
+
+## 2. Technology Stack
+
+- **Backend:** Java 21, Spring Boot 3.3.4, Spring Security 6, Spring Data JPA / Hibernate 6, JJWT 0.12.6, Flyway 10, JUnit 5, Mockito.
+- **Database:** MySQL 8.0 with InnoDB and UTF-8 Unicode.
+- **Frontend:** React 19, Vite, React Router 7, Axios, Recharts, Lucide React icons.
+- **Containerization:** Docker, Docker Compose (multi-stage builds, Nginx reverse proxy).
+
+---
+
+## 3. Quick Start (Local Development)
+
+### Prerequisites
+- Java 21 JDK (`openjdk 21` or `temurin-21`)
+- Maven 3.9+
+- Node.js 20+ and npm 10+
+- MySQL 8.0 running locally on port 3306
+
+### Environment Setup
+Create a `.env` or set the following environment variables (see `.env.example`):
+```bash
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=supportdesk_db
+DB_USERNAME=root
+DB_PASSWORD=mysql
+SERVER_PORT=8080
+JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+JWT_EXPIRATION=86400000
+ADMIN_BOOTSTRAP_EMAIL=admin@supportdesk.com
+ADMIN_BOOTSTRAP_PASSWORD=Admin@SupportDesk2026!
+ADMIN_BOOTSTRAP_NAME=System Administrator
+```
+
+### Start the Backend
+```powershell
+cd backend
+mvn clean spring-boot:run
+```
+*The backend starts at `http://localhost:8080`. Flyway will automatically execute migrations and seed the initial administrator.*
+
+### Start the Frontend
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+*The React application will be available at `http://localhost:5173`.*
+
+---
+
+## 4. Running with Docker Compose
+
+To run the entire stack (MySQL 8, Spring Boot JAR, and Nginx React frontend) with a single command:
+```bash
+docker compose up --build
+```
+- Frontend: `http://localhost`
+- Backend API: `http://localhost:8080/api`
+- Health check: `http://localhost:8080/api/health`
+
+---
+
+## 5. Automated Testing
+
+### Backend Unit & Integration Tests
+Execute the comprehensive test suite (including Spring Security tests and status transition rule validation):
+```powershell
+cd backend
+mvn test
+```
+*Tests run against an isolated in-memory H2 database in MySQL compatibility mode.*
+
+### Frontend Production Build Test
+```powershell
+cd frontend
+npm run build
+```
+
+---
+
+## 6. Seed Accounts for Demonstration
+
+| Role | Email | Password |
+|---|---|---|
+| **Admin** | `admin@supportdesk.com` | `Admin@SupportDesk2026!` |
+| **Agent** | Provisioned via Admin UI or register as customer | Custom |
+| **Customer**| Register directly on `/register` | Custom |
+
+---
+
+## 7. Documentation
+- [System Architecture & Workflow](docs/architecture.md)
+- [REST API Specifications](docs/api-documentation.md)
+- [Database Schema & Migrations](docs/database-design.md)
+>>>>>>> 3001841 (feat: complete initial implementation of SupportDesk fullstack system)

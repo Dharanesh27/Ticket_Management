@@ -1,3 +1,5 @@
+git add README.md
+<<<<<<< HEAD
 <<<<<<< HEAD
 # 🎫 SupportDesk — Customer Support Ticket Management System
 
@@ -465,71 +467,121 @@ B.Tech — Artificial Intelligence and Data Science
 Project: Customer Support Ticket Management System
 =======
 # SupportDesk - Customer Support Ticket Management System
+=======
+# SupportDesk — Enterprise Customer Support Ticket Management Platform
+>>>>>>> cc4e73c (docs: enhance README with architecture badges and GitHub setup instructions)
 
-SupportDesk is an enterprise-grade Customer Support Ticket Management System built from scratch as a modular monolith. It provides customer self-service ticket filing, agent queue management, and executive administrative oversight with strict role-based access control (RBAC), database transaction atomicity, and an immutable audit history log.
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19.2.0-blue.svg)](https://react.dev/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+
+**SupportDesk** is a production-oriented, full-stack customer support and ticketing platform built as a clean modular monolith. It provides customer self-service ticket filing, support agent workload queue management, and executive administrative oversight with strict Role-Based Access Control (RBAC), database transaction atomicity, and an immutable audit trail.
 
 ---
 
-## 1. Key Features
+## Architecture Overview
 
-- **Public Self-Service Registration & Secure Auth:** Customers can sign up and receive immediate JWT tokens. Registration strictly provisions `ROLE_CUSTOMER` to prevent privilege escalation.
-- **Automated Administrator Bootstrap:** The backend seeds a secure system administrator upon initial startup if no admin exists in the database.
-- **Full Ticket Lifecycle Workflow:**
+```
+[React 19 SPA (Vite / Nginx)]
+      │
+      ▼  (HTTP / JSON with JWT Bearer Token)
+[Spring Boot 3 REST Controllers] (/api/auth, /api/tickets, /api/agent, /api/admin)
+      │
+      ▼
+[Spring Security 6 Filter Chain] (JwtAuthenticationFilter & CustomUserDetailsService)
+      │
+      ▼
+[Service Layer] (Business Rules, Ownership Isolation, State Machine Guards)
+      │
+      ├──────────────────────────────┐
+      ▼                              ▼
+[Audit History Service]      [Spring Data JPA Repositories]
+(Atomic audit log)                   │
+                                     ▼
+                          [Hibernate 6 ORM Layer]
+                                     │
+                                     ▼
+                          [MySQL 8.0 Relational DB]
+                          (Managed via Flyway Migrations)
+```
+
+---
+
+## Key Features
+
+- **Public Customer Registration & Secure Auth**: Public signup strictly provisions `ROLE_CUSTOMER` (preventing privilege escalation). Passwords are encrypted with BCrypt ($2a$). Stateless JWT tokens are signed using HMAC-SHA256.
+- **Automated Admin Bootstrap Seeding**: On cold database startup, the backend automatically seeds a system administrator using environment variables.
+- **State Machine Ticket Lifecycle**:
   - `OPEN` &rarr; `IN_PROGRESS` (Agent claim or Admin assignment)
-  - `IN_PROGRESS` &rarr; `RESOLVED` (Handled by assigned agent or administrator)
+  - `IN_PROGRESS` &rarr; `RESOLVED` (Assigned agent or Administrator)
   - `RESOLVED` &rarr; `CLOSED` (Terminal state)
-  - Reopening is restricted to administrators.
-- **Collaborative Conversations & Internal Notes:** Real-time discussion between customers and support engineers. Staff can mark comments as `internalNote`, automatically stripping them from customer views.
-- **Comprehensive Audit Trail:** Immutable ticket history tracking previous and new values, actor details, and timestamps within the same database transaction.
-- **Three Distinct Role-Based Dashboards:**
-  - **Customer Portal:** Track active requests, status badges, and submit new tickets.
-  - **Agent Workstation:** View personal workload, monitor unassigned tickets, and claim tickets in one click.
-  - **Executive Admin Dashboard:** Real-time data visualizations with Recharts (status pie charts, priority distribution bars), agent capacity breakdown, and user administration.
-- **Safe Server-Side Search, Filter, & Pagination:** Filter by status, priority, category, or agent with allowlisted sorting keys.
+  - Reopening is restricted to administrators. Closed tickets are strictly immutable.
+- **Real-Time Conversations & Staff Internal Notes**: Discussion thread between customers and support engineers. Staff can mark comments as `internalNote`, which is filtered at the database level and hidden from customer accounts.
+- **Atomic Audit Trail**: Immutable history log tracking previous values, new values, actors, and timestamps within the same database transaction.
+- **Role-Aware Dashboards**:
+  - **Customer Portal**: Track active inquiries, status badges, and submit new tickets.
+  - **Agent Workstation**: View personal workload, monitor unassigned tickets, and claim tickets with one click.
+  - **Executive Admin Dashboard**: Real-time data visualizations with Recharts (status donut chart, priority distribution bar chart), agent capacity utilization, and user access management.
+- **Safe Server-Side Search, Filtering, & Pagination**: Filter by status, priority, category, or agent with allowlisted sorting keys.
 
 ---
 
-## 2. Technology Stack
+## Tech Stack
 
-- **Backend:** Java 21, Spring Boot 3.3.4, Spring Security 6, Spring Data JPA / Hibernate 6, JJWT 0.12.6, Flyway 10, JUnit 5, Mockito.
-- **Database:** MySQL 8.0 with InnoDB and UTF-8 Unicode.
-- **Frontend:** React 19, Vite, React Router 7, Axios, Recharts, Lucide React icons.
-- **Containerization:** Docker, Docker Compose (multi-stage builds, Nginx reverse proxy).
+| Layer | Technologies |
+|---|---|
+| **Backend** | Java 21, Spring Boot 3.3.4, Spring Security 6, Spring Data JPA, Hibernate 6, JJWT 0.12.6, Flyway 10, JUnit 5, Mockito |
+| **Frontend** | React 19, Vite 8, React Router 7, Axios, Recharts 3, Lucide React icons |
+| **Database** | MySQL 8.0 (InnoDB, UTF-8 Unicode) |
+| **DevOps** | Docker, Docker Compose, Nginx (reverse proxy & SPA router) |
 
 ---
 
-## 3. Quick Start (Local Development)
+## Getting Started
 
 ### Prerequisites
-- Java 21 JDK (`openjdk 21` or `temurin-21`)
-- Maven 3.9+
-- Node.js 20+ and npm 10+
-- MySQL 8.0 running locally on port 3306
+- **Java 21 JDK** (Eclipse Temurin or OpenJDK)
+- **Maven 3.9+**
+- **Node.js 20+** and **npm 10+**
+- **MySQL 8.0** running locally on port `3306`
 
-### Environment Setup
-Create a `.env` or set the following environment variables (see `.env.example`):
+---
+
+### Option 1: Run with Docker Compose (Fastest)
+
+Make sure Docker Desktop is running:
 ```bash
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=supportdesk_db
-DB_USERNAME=root
-DB_PASSWORD=mysql
-SERVER_PORT=8080
-JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-JWT_EXPIRATION=86400000
-ADMIN_BOOTSTRAP_EMAIL=admin@supportdesk.com
-ADMIN_BOOTSTRAP_PASSWORD=Admin@SupportDesk2026!
-ADMIN_BOOTSTRAP_NAME=System Administrator
+docker compose up --build
+```
+- **Web Application**: `http://localhost`
+- **Backend API**: `http://localhost:8080/api`
+- **Health Check**: `http://localhost:8080/api/health`
+
+---
+
+### Option 2: Run Locally (Windows PowerShell)
+
+#### 1. Setup MySQL Database
+```powershell
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS supportdesk_db;"
 ```
 
-### Start the Backend
+#### 2. Start the Backend (Terminal 1)
 ```powershell
 cd backend
+$env:JAVA_HOME = "C:\Users\<username>\.jdks\temurin-21.0.12"  # Adjust if needed
 mvn clean spring-boot:run
 ```
-*The backend starts at `http://localhost:8080`. Flyway will automatically execute migrations and seed the initial administrator.*
+*Or run the pre-built JAR:*
+```powershell
+java -jar target/supportdesk-backend-1.0.0.jar
+```
+*The Spring Boot backend will start on `http://localhost:8080`. Flyway will run migrations and seed the initial administrator.*
 
-### Start the Frontend
+#### 3. Start the Frontend (Terminal 2)
 ```powershell
 cd frontend
 npm install
@@ -539,29 +591,77 @@ npm run dev
 
 ---
 
-## 4. Running with Docker Compose
+## Demo Credentials
 
-To run the entire stack (MySQL 8, Spring Boot JAR, and Nginx React frontend) with a single command:
-```bash
-docker compose up --build
-```
-- Frontend: `http://localhost`
-- Backend API: `http://localhost:8080/api`
-- Health check: `http://localhost:8080/api/health`
+You can immediately log in with the following seeded roles:
+
+| Role | Email | Password | Scope |
+|---|---|---|---|
+| **Administrator** | `admin@supportdesk.com` | `Admin@SupportDesk2026!` | Full oversight, analytics, assignment, agent management |
+| **Support Agent** | `david.agent@supportdesk.com` | `AgentPassword123!` | Assigned workload, claim unassigned tickets, post staff notes |
+| **Customer** | `sarah@gmail.com` | `Password123!` | Submit tickets, view own tickets, reply in conversation |
+
+*(You can also click **"Create one"** on the login page to register brand new customer accounts).*
 
 ---
 
-## 5. Automated Testing
+## Database Design & ER Diagram
 
-### Backend Unit & Integration Tests
-Execute the comprehensive test suite (including Spring Security tests and status transition rule validation):
+```mermaid
+erDiagram
+    USERS ||--o{ TICKETS : "creates (customer_id)"
+    USERS ||--o{ TICKETS : "assigned to (assigned_agent_id)"
+    USERS ||--o{ COMMENTS : "authors (author_id)"
+    USERS ||--o{ TICKET_HISTORY : "triggers (actor_id)"
+    TICKETS ||--o{ COMMENTS : "contains (ticket_id)"
+    TICKETS ||--o{ TICKET_HISTORY : "tracks (ticket_id)"
+```
+
+- **`users`**: User accounts, BCrypt passwords, role permissions (`ROLE_ADMIN`, `ROLE_AGENT`, `ROLE_CUSTOMER`), and active/inactive status.
+- **`tickets`**: Support tickets with unique ticket reference number (`TCK-xxx`), status, priority, and category.
+- **`comments`**: Public customer replies and private staff diagnostic notes.
+- **`ticket_history`**: Audit trail capturing action type, actor ID, previous/new value, and timestamps.
+
+---
+
+## REST API Endpoints
+
+| Method | Endpoint | Required Role | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Public | Register customer account (auto-issues JWT) |
+| `POST` | `/api/auth/login` | Public | Authenticate user & return JWT token |
+| `GET` | `/api/auth/me` | Authenticated | Retrieve current user profile |
+| `POST` | `/api/tickets` | `ROLE_CUSTOMER` | Create support ticket |
+| `GET` | `/api/tickets/my` | `ROLE_CUSTOMER` | Paginated search of customer's own tickets |
+| `GET` | `/api/tickets/my/dashboard` | `ROLE_CUSTOMER` | Customer status counts & recent tickets |
+| `GET` | `/api/tickets/{id}` | Authenticated | View ticket details (ownership guarded) |
+| `POST` | `/api/tickets/{id}/comments`| Authenticated | Post comment (checks customer/agent eligibility) |
+| `GET` | `/api/tickets/{id}/comments` | Authenticated | List comments (strips internal notes for customers) |
+| `GET` | `/api/tickets/{id}/history` | Authenticated | View audit trail (ownership guarded) |
+| `GET` | `/api/agent/tickets` | `ROLE_AGENT`, `ADMIN` | List tickets assigned to agent |
+| `GET` | `/api/agent/tickets/unassigned` | `ROLE_AGENT`, `ADMIN` | List unassigned queue tickets |
+| `POST` | `/api/agent/tickets/{id}/claim` | `ROLE_AGENT`, `ADMIN` | Claim unassigned ticket into active queue |
+| `PATCH`| `/api/agent/tickets/{id}/status` | `ROLE_AGENT`, `ADMIN` | Transition ticket status (`IN_PROGRESS` &rarr; `RESOLVED`) |
+| `GET` | `/api/admin/tickets` | `ROLE_ADMIN` | View and filter all system tickets |
+| `PATCH`| `/api/admin/tickets/{id}/assign` | `ROLE_ADMIN` | Assign or reassign ticket to an agent |
+| `PATCH`| `/api/admin/tickets/{id}/status` | `ROLE_ADMIN` | Admin status override (close / reopen) |
+| `GET` | `/api/admin/dashboard` | `ROLE_ADMIN` | Executive metrics, charts data, workload capacity |
+| `GET` | `/api/admin/users` | `ROLE_ADMIN` | List all system users |
+| `POST` | `/api/admin/users/agents` | `ROLE_ADMIN` | Provision new agent account |
+| `PATCH`| `/api/admin/users/{id}/active` | `ROLE_ADMIN` | Toggle user active/inactive status |
+
+---
+
+## Automated Tests
+
+Run backend unit and integration test suite:
 ```powershell
 cd backend
 mvn test
 ```
-*Tests run against an isolated in-memory H2 database in MySQL compatibility mode.*
+*Executes tests against an isolated, in-memory H2 database in MySQL compatibility mode.*
 
-### Frontend Production Build Test
+Verify production frontend build:
 ```powershell
 cd frontend
 npm run build
@@ -569,18 +669,32 @@ npm run build
 
 ---
 
-## 6. Seed Accounts for Demonstration
+## Git & GitHub Push Instructions
 
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | `admin@supportdesk.com` | `Admin@SupportDesk2026!` |
-| **Agent** | Provisioned via Admin UI or register as customer | Custom |
-| **Customer**| Register directly on `/register` | Custom |
+To push this codebase to your own GitHub repository:
+
+1. Create a new repository on [GitHub](https://github.com/new) called **`SupportDesk`**.
+2. Run the following commands in your project root terminal:
+
+```bash
+# Link your remote repository
+git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/SupportDesk.git
+
+# Set default branch to main and push
+git branch -M main
+git push -u origin main
+```
 
 ---
 
+<<<<<<< HEAD
 ## 7. Documentation
 - [System Architecture & Workflow](docs/architecture.md)
 - [REST API Specifications](docs/api-documentation.md)
 - [Database Schema & Migrations](docs/database-design.md)
 >>>>>>> 3001841 (feat: complete initial implementation of SupportDesk fullstack system)
+=======
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+>>>>>>> cc4e73c (docs: enhance README with architecture badges and GitHub setup instructions)
